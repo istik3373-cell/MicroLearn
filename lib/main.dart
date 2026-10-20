@@ -6,6 +6,10 @@ void main() {
   runApp(const MikroLearnApp());
 }
 
+// =====================================================
+// APLIKASI MIKROLEARN
+// =====================================================
+
 class MikroLearnApp extends StatelessWidget {
   const MikroLearnApp({super.key});
 
@@ -20,13 +24,13 @@ class MikroLearnApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF4F46E5),
         ),
+        scaffoldBackgroundColor: const Color(0xFFF8F9FC),
       ),
 
       home: const MainPage(),
     );
   }
 }
-
 
 // =====================================================
 // MAIN PAGE
@@ -40,10 +44,12 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-
   int selectedIndex = 0;
 
-  // Halaman aplikasi
+  // ===================================================
+  // HALAMAN UTAMA YANG BISA DIAKSES
+  // ===================================================
+
   final List<Widget> pages = const [
     HomePage(),
     MateriPage(),
@@ -52,9 +58,11 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       // Menampilkan halaman sesuai menu yang dipilih
-      body: pages[selectedIndex],
+      body: IndexedStack(
+        index: selectedIndex,
+        children: pages,
+      ),
 
       // =================================================
       // BOTTOM NAVIGATION
@@ -70,7 +78,6 @@ class _MainPageState extends State<MainPage> {
         },
 
         destinations: const [
-
           NavigationDestination(
             icon: Icon(Icons.home_outlined),
             selectedIcon: Icon(Icons.home),
@@ -82,7 +89,6 @@ class _MainPageState extends State<MainPage> {
             selectedIcon: Icon(Icons.menu_book),
             label: 'Materi',
           ),
-
         ],
       ),
     );
