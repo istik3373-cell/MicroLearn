@@ -612,8 +612,8 @@ class QuizResultPage extends StatelessWidget {
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6366F1),
-                        foregroundColor: Colors.white,
+                        backgroundColor: const Color.fromARGB(255, 235, 112, 240),
+                        foregroundColor: const Color.fromARGB(255, 9, 54, 100),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(18),
                         ),

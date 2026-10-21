@@ -132,7 +132,7 @@ class HomePage extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       const Text(
-                        'Hai, Nur Istikomah! 💗',
+                        'Hai, Sobat Milearn! ',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 27,
