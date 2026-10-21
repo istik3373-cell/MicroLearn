@@ -1,6 +1,8 @@
+
 import 'package:flutter/material.dart';
 import 'home.dart';
 import 'materi.dart';
+import 'profil.dart';
 
 void main() {
   runApp(const MikroLearnApp());
@@ -24,7 +26,7 @@ class MikroLearnApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF4F46E5),
         ),
-        scaffoldBackgroundColor: const Color(0xFFF8F9FC),
+        scaffoldBackgroundColor: const Color(0xFF090B20),
       ),
 
       home: const MainPage(),
@@ -47,17 +49,20 @@ class _MainPageState extends State<MainPage> {
   int selectedIndex = 0;
 
   // ===================================================
-  // HALAMAN UTAMA YANG BISA DIAKSES
+  // DAFTAR HALAMAN
   // ===================================================
 
   final List<Widget> pages = const [
     HomePage(),
     MateriPage(),
+    ProfilPage(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF090B20),
+
       // Menampilkan halaman sesuai menu yang dipilih
       body: IndexedStack(
         index: selectedIndex,
@@ -69,6 +74,9 @@ class _MainPageState extends State<MainPage> {
       // =================================================
 
       bottomNavigationBar: NavigationBar(
+        backgroundColor: const Color(0xFF141832),
+        indicatorColor: const Color(0xFF4263FF).withValues(alpha: 0.25),
+        elevation: 0,
         selectedIndex: selectedIndex,
 
         onDestinationSelected: (index) {
@@ -77,17 +85,43 @@ class _MainPageState extends State<MainPage> {
           });
         },
 
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+
         destinations: const [
           NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
+            icon: Icon(
+              Icons.home_outlined,
+              color: Colors.white60,
+            ),
+            selectedIcon: Icon(
+              Icons.home_rounded,
+              color: Color(0xFF46E8FF),
+            ),
             label: 'Home',
           ),
 
           NavigationDestination(
-            icon: Icon(Icons.menu_book_outlined),
-            selectedIcon: Icon(Icons.menu_book),
+            icon: Icon(
+              Icons.menu_book_outlined,
+              color: Colors.white60,
+            ),
+            selectedIcon: Icon(
+              Icons.menu_book_rounded,
+              color: Color(0xFF46E8FF),
+            ),
             label: 'Materi',
+          ),
+
+          NavigationDestination(
+            icon: Icon(
+              Icons.person_outline_rounded,
+              color: Colors.white60,
+            ),
+            selectedIcon: Icon(
+              Icons.person_rounded,
+              color: Color(0xFFFF4FA3),
+            ),
+            label: 'Profil',
           ),
         ],
       ),
