@@ -1,4 +1,24 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+
+const Color quizBg = Color(0xFF090B20);
+const Color quizCard = Color(0xFF141832);
+const Color quizBlue = Color(0xFF4263FF);
+const Color quizPink = Color(0xFFFF4FA3);
+const Color quizCyan = Color(0xFF46E8FF);
+const Color quizMuted = Color(0xFFA7B0D0);
+
+class QuizQuestion {
+  final String question;
+  final List<String> options;
+  final int correctIndex;
+
+  const QuizQuestion({
+    required this.question,
+    required this.options,
+    required this.correctIndex,
+  });
+}
 
 class QuizPage extends StatefulWidget {
   final String judulMateri;
@@ -17,644 +37,857 @@ class _QuizPageState extends State<QuizPage> {
   int score = 0;
   int? selectedAnswer;
   bool answered = false;
+    final AudioPlayer _audioPlayer = AudioPlayer();
 
-  final List<Map<String, dynamic>> questions = [
-    {
-      'question': 'Apa yang dimaksud dengan komputer?',
-      'options': [
-        'Alat untuk memasak',
-        'Perangkat elektronik untuk mengolah data',
-        'Alat untuk mencetak uang',
-        'Perangkat untuk mengisi baterai',
+  Future<void> _playAnswerSound(bool isCorrect) async {
+    try {
+      await _audioPlayer.stop();
+
+      await _audioPlayer.play(
+        AssetSource(
+          isCorrect ? 'sounds/correct.wav' : 'sounds/wrong.wav',
+        ),
+      );
+    } catch (e) {
+      debugPrint('Gagal memutar suara quiz: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    _audioPlayer.dispose();
+    super.dispose();
+  }
+
+  final List<QuizQuestion> questions = const [
+    QuizQuestion(
+      question: 'Apa yang dimaksud dengan komputer?',
+      options: [
+        'Alat untuk mengolah data menjadi informasi',
+        'Alat khusus untuk mencetak dokumen',
+        'Perangkat untuk menyimpan pakaian',
+        'Alat yang hanya digunakan untuk bermain',
       ],
-      'answer': 1,
-    },
-    {
-      'question': 'Data yang telah diolah oleh komputer disebut...',
-      'options': [
-        'Informasi',
-        'Keyboard',
-        'Hardware',
-        'Folder',
-      ],
-      'answer': 0,
-    },
-    {
-      'question': 'Manakah yang termasuk perangkat keras?',
-      'options': [
-        'Microsoft Word',
-        'Windows',
-        'Keyboard',
-        'Google Chrome',
-      ],
-      'answer': 2,
-    },
-    {
-      'question': 'Bagian komputer yang digunakan untuk menampilkan gambar disebut...',
-      'options': [
-        'Keyboard',
-        'Monitor',
-        'Mouse',
-        'Speaker',
-      ],
-      'answer': 1,
-    },
-    {
-      'question': 'Perangkat yang digunakan untuk memasukkan teks ke komputer adalah...',
-      'options': [
+      correctIndex: 0,
+    ),
+    QuizQuestion(
+      question: 'Manakah yang termasuk perangkat input?',
+      options: [
         'Monitor',
         'Printer',
         'Keyboard',
         'Speaker',
       ],
-      'answer': 2,
-    },
+      correctIndex: 2,
+    ),
+    QuizQuestion(
+      question: 'Apa fungsi utama CPU pada komputer?',
+      options: [
+        'Menampilkan gambar ke layar',
+        'Memproses instruksi dan data',
+        'Mencetak dokumen',
+        'Mengeluarkan suara',
+      ],
+      correctIndex: 1,
+    ),
+    QuizQuestion(
+      question: 'Manakah yang termasuk perangkat lunak?',
+      options: [
+        'Mouse',
+        'RAM',
+        'Motherboard',
+        'Sistem operasi',
+      ],
+      correctIndex: 3,
+    ),
+    QuizQuestion(
+      question: 'Apa fungsi RAM pada komputer?',
+      options: [
+        'Menyimpan data sementara saat program berjalan',
+        'Mencetak gambar dan tulisan',
+        'Menghubungkan komputer ke listrik secara langsung',
+        'Menampilkan hasil pengolahan ke layar',
+      ],
+      correctIndex: 0,
+    ),
   ];
 
-  void selectAnswer(int index) {
+  void chooseAnswer(int index) {
     if (answered) return;
 
     setState(() {
       selectedAnswer = index;
-      answered = true;
-
-      if (index == questions[currentQuestion]['answer']) {
-        score++;
-      }
     });
   }
 
-  void nextQuestion() {
-    if (currentQuestion < questions.length - 1) {
-      setState(() {
-        currentQuestion++;
-        selectedAnswer = null;
-        answered = false;
-      });
-    } else {
-      showResult();
-    }
+    void nextQuestion() {
+    if (selectedAnswer == null || answered) return;
+
+    final isCorrect =
+        selectedAnswer == questions[currentQuestion].correctIndex;
+
+    // Memutar suara sesuai jawaban
+    _playAnswerSound(isCorrect);
+
+    setState(() {
+      answered = true;
+
+      if (isCorrect) {
+        score++;
+      }
+    });
+
+    // Tunggu sebentar sebelum pindah ke soal berikutnya
+    Future.delayed(const Duration(milliseconds: 650), () {
+      if (!mounted) return;
+
+      if (currentQuestion < questions.length - 1) {
+        setState(() {
+          currentQuestion++;
+          selectedAnswer = null;
+          answered = false;
+        });
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => QuizResultPage(
+              judulMateri: widget.judulMateri,
+              score: score,
+              total: questions.length,
+            ),
+          ),
+        );
+      }
+    });
   }
-
-  void showResult() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => QuizResultPage(
-          score: score,
-          total: questions.length,
-          judulMateri: widget.judulMateri,
-        ),
-      ),
-    );
-  }
-
-  Color getOptionColor(int index) {
-    if (!answered) {
-      return Colors.white;
-    }
-
-    final correctAnswer = questions[currentQuestion]['answer'];
-
-    if (index == correctAnswer) {
-      return const Color(0xFFD1FAE5);
-    }
-
-    if (index == selectedAnswer && index != correctAnswer) {
-      return const Color(0xFFFEE2E2);
-    }
-
-    return Colors.white;
-  }
-
-  Color getOptionBorderColor(int index) {
-    if (!answered) {
-      return const Color(0xFFE5E7EB);
-    }
-
-    final correctAnswer = questions[currentQuestion]['answer'];
-
-    if (index == correctAnswer) {
-      return const Color(0xFF10B981);
-    }
-
-    if (index == selectedAnswer && index != correctAnswer) {
-      return const Color(0xFFEF4444);
-    }
-
-    return const Color(0xFFE5E7EB);
-  }
-
+  
   @override
   Widget build(BuildContext context) {
     final question = questions[currentQuestion];
-    final progress = (currentQuestion + 1) / questions.length;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F7FF),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        title: const Text(
-          'Mini Quiz',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxWidth: 650,
+      backgroundColor: quizBg,
+      body: Stack(
+        children: [
+          Positioned(
+            top: -90,
+            right: -90,
+            child: _QuizGlow(
+              color: quizPink.withOpacity(0.12),
+              size: 240,
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // HEADER
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Uji Pemahaman 🎯',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        '${currentQuestion + 1}/${questions.length}',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF6366F1),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  // PROGRESS BAR
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: LinearProgressIndicator(
-                      value: progress,
-                      minHeight: 10,
-                      backgroundColor: const Color(0xFFE5E7EB),
-                      valueColor: const AlwaysStoppedAnimation<Color>(
-                        Color(0xFF6366F1),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 28),
-
-                  // MATERI LABEL
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEDE9FE),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      widget.judulMateri,
-                      style: const TextStyle(
-                        color: Color(0xFF6366F1),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // QUESTION CARD
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(22),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [
-                          Color(0xFF6366F1),
-                          Color(0xFF8B5CF6),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.deepPurple.withOpacity(0.15),
-                          blurRadius: 15,
-                          offset: const Offset(0, 7),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        const Icon(
-                          Icons.psychology_rounded,
-                          color: Colors.white,
-                          size: 42,
-                        ),
-                        const SizedBox(height: 14),
-                        Text(
-                          question['question'],
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            height: 1.4,
+          ),
+          Positioned(
+            bottom: 80,
+            left: -120,
+            child: _QuizGlow(
+              color: quizBlue.withOpacity(0.12),
+              size: 250,
+            ),
+          ),
+          SafeArea(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 680),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+                      child: Row(
+                        children: [
+                          _IconButtonBox(
+                            icon: Icons.arrow_back_rounded,
+                            onTap: () => Navigator.pop(context),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 22),
-
-                  const Text(
-                    'Pilih jawaban yang paling tepat:',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF4B5563),
-                    ),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  // OPTIONS
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: question['options'].length,
-                      itemBuilder: (context, index) {
-                        final option = question['options'][index];
-
-                        return GestureDetector(
-                          onTap: () => selectAnswer(index),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 250),
-                            margin: const EdgeInsets.only(bottom: 12),
-                            padding: const EdgeInsets.all(16),
+                          const SizedBox(width: 14),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'MIKROLEARN / QUIZ',
+                                  style: TextStyle(
+                                    color: quizCyan,
+                                    fontSize: 10,
+                                    letterSpacing: 2,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  'Knowledge Check',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 9,
+                            ),
                             decoration: BoxDecoration(
-                              color: getOptionColor(index),
-                              borderRadius: BorderRadius.circular(18),
+                              color: quizPink.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: getOptionBorderColor(index),
-                                width: 2,
+                                color: quizPink.withOpacity(0.4),
                               ),
                             ),
                             child: Row(
                               children: [
-                                Container(
-                                  width: 38,
-                                  height: 38,
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    color: answered &&
-                                            index ==
-                                                question['answer']
-                                        ? const Color(0xFF10B981)
-                                        : answered &&
-                                                index == selectedAnswer
-                                            ? const Color(0xFFEF4444)
-                                            : const Color(0xFFEDE9FE),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Text(
-                                    String.fromCharCode(65 + index),
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: answered &&
-                                              (index ==
-                                                      question['answer'] ||
-                                                  index == selectedAnswer)
-                                          ? Colors.white
-                                          : const Color(0xFF6366F1),
-                                    ),
+                                const Icon(
+                                  Icons.bolt_rounded,
+                                  color: quizPink,
+                                  size: 17,
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  '$score XP',
+                                  style: const TextStyle(
+                                    color: quizPink,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
-
-                                const SizedBox(width: 14),
-
-                                Expanded(
-                                  child: Text(
-                                    option,
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFF374151),
-                                    ),
-                                  ),
-                                ),
-
-                                if (answered &&
-                                    index == question['answer'])
-                                  const Icon(
-                                    Icons.check_circle,
-                                    color: Color(0xFF10B981),
-                                  ),
-
-                                if (answered &&
-                                    index == selectedAnswer &&
-                                    index != question['answer'])
-                                  const Icon(
-                                    Icons.cancel,
-                                    color: Color(0xFFEF4444),
-                                  ),
                               ],
                             ),
                           ),
-                        );
-                      },
+                        ],
+                      ),
                     ),
-                  ),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 16),
+                            Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(22),
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    Color(0xFF24285A),
+                                    Color(0xFF17172F),
+                                    Color(0xFF30162F),
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                border: Border.all(
+                                  color: quizPink.withOpacity(0.35),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'CHALLENGE MODE',
+                                          style: TextStyle(
+                                            color: quizPink,
+                                            fontSize: 10,
+                                            letterSpacing: 2,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        Text(
+                                          widget.judulMateri,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 21,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        const Text(
+                                          'Uji pemahamanmu dan selesaikan tantangan ini!',
+                                          style: TextStyle(
+                                            color: quizMuted,
+                                            fontSize: 12,
+                                            height: 1.5,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  const Icon(
+                                    Icons.psychology_alt_rounded,
+                                    color: quizCyan,
+                                    size: 52,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 28),
+                            Row(
+                              children: [
+                                Text(
+                                  'QUESTION ${currentQuestion + 1}',
+                                  style: const TextStyle(
+                                    color: quizCyan,
+                                    fontSize: 11,
+                                    letterSpacing: 2,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const Spacer(),
+                                Text(
+                                  '${currentQuestion + 1}/${questions.length}',
+                                  style: const TextStyle(
+                                    color: quizMuted,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: LinearProgressIndicator(
+                                value: (currentQuestion + 1) /
+                                    questions.length,
+                                minHeight: 6,
+                                backgroundColor: Colors.white.withOpacity(0.08),
+                                valueColor:
+                                    const AlwaysStoppedAnimation(quizPink),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            const Text(
+                              'PILIH JAWABAN YANG TEPAT',
+                              style: TextStyle(
+                                color: quizMuted,
+                                fontSize: 10,
+                                letterSpacing: 1.5,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: quizCard,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: quizBlue.withOpacity(0.3),
+                                ),
+                              ),
+                              child: Text(
+                                question.question,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 19,
+                                  height: 1.5,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 18),
+                            ...List.generate(
+                              question.options.length,
+                              (index) {
+                                final isSelected = selectedAnswer == index;
+                                final isCorrect =
+                                    index == question.correctIndex;
 
-                  // BUTTON
-                  if (answered)
-                    SizedBox(
-                      width: double.infinity,
-                      height: 54,
-                      child: ElevatedButton(
-                        onPressed: nextQuestion,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF6366F1),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: Text(
-                          currentQuestion == questions.length - 1
-                              ? 'Lihat Hasil 🎉'
-                              : 'Soal Berikutnya →',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                                Color borderColor =
+                                    Colors.white.withOpacity(0.09);
+                                Color iconColor = quizMuted;
+                                IconData icon = Icons.circle_outlined;
+
+                                if (answered && isCorrect) {
+                                  borderColor = quizCyan;
+                                  iconColor = quizCyan;
+                                  icon = Icons.check_circle_rounded;
+                                } else if (answered && isSelected) {
+                                  borderColor = quizPink;
+                                  iconColor = quizPink;
+                                  icon = Icons.cancel_rounded;
+                                } else if (isSelected) {
+                                  borderColor = quizPink;
+                                  iconColor = quizPink;
+                                  icon = Icons.radio_button_checked_rounded;
+                                }
+
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      onTap: () => chooseAnswer(index),
+                                      borderRadius: BorderRadius.circular(16),
+                                      child: Ink(
+                                        padding: const EdgeInsets.all(16),
+                                        decoration: BoxDecoration(
+                                          color: isSelected
+                                              ? quizPink.withOpacity(0.08)
+                                              : quizCard,
+                                          borderRadius:
+                                              BorderRadius.circular(16),
+                                          border: Border.all(
+                                            color: borderColor,
+                                            width: isSelected || answered
+                                                ? 1.4
+                                                : 1,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Container(
+                                              width: 34,
+                                              height: 34,
+                                              alignment: Alignment.center,
+                                              decoration: BoxDecoration(
+                                                color: iconColor.withOpacity(0.1),
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                              ),
+                                              child: Text(
+                                                String.fromCharCode(65 + index),
+                                                style: TextStyle(
+                                                  color: iconColor,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 13),
+                                            Expanded(
+                                              child: Text(
+                                                question.options[index],
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 13,
+                                                  height: 1.5,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Icon(
+                                              icon,
+                                              color: iconColor,
+                                              size: 20,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            if (answered) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                selectedAnswer == question.correctIndex
+                                    ? 'Nice! Jawaban kamu benar!'
+                                    : 'Belum tepat. Jawaban yang benar sudah ditandai.',
+                                style: TextStyle(
+                                  color: selectedAnswer ==
+                                          question.correctIndex
+                                      ? quizCyan
+                                      : quizPink,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                            const SizedBox(height: 20),
+                            SizedBox(
+                              width: double.infinity,
+                              height: 54,
+                              child: ElevatedButton(
+                                onPressed: selectedAnswer == null || answered
+                                    ? null
+                                    : nextQuestion,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: quizPink,
+                                  disabledBackgroundColor:
+                                      quizPink.withOpacity(0.2),
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  elevation: 0,
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      currentQuestion == questions.length - 1
+                                          ? 'LIHAT HASIL'
+                                          : 'JAWAB & LANJUT',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        letterSpacing: 1,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    const Icon(
+                                      Icons.arrow_forward_rounded,
+                                      size: 19,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                          ],
                         ),
                       ),
                     ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class QuizResultPage extends StatelessWidget {
+  final String judulMateri;
+  final int score;
+  final int total;
+
+  const QuizResultPage({
+    super.key,
+    required this.judulMateri,
+    required this.score,
+    required this.total,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final percentage = total == 0 ? 0 : (score * 100 / total).round();
+    final passed = percentage >= 70;
+
+    return Scaffold(
+      backgroundColor: quizBg,
+      body: Stack(
+        children: [
+          Positioned(
+            top: -80,
+            right: -80,
+            child: _QuizGlow(
+              color: quizPink.withOpacity(0.12),
+              size: 240,
+            ),
+          ),
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 500),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'MIKROLEARN / RESULTS',
+                        style: TextStyle(
+                          color: quizCyan,
+                          fontSize: 11,
+                          letterSpacing: 3,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 35),
+                      Container(
+                        width: 110,
+                        height: 110,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: (passed ? quizCyan : quizPink)
+                              .withOpacity(0.1),
+                          border: Border.all(
+                            color: passed ? quizCyan : quizPink,
+                            width: 2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: (passed ? quizCyan : quizPink)
+                                  .withOpacity(0.15),
+                              blurRadius: 30,
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          passed
+                              ? Icons.emoji_events_rounded
+                              : Icons.psychology_alt_rounded,
+                          color: passed ? quizCyan : quizPink,
+                          size: 52,
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+                      Text(
+                        passed ? 'LEVEL COMPLETED!' : 'KEEP LEARNING!',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 25,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        passed
+                            ? 'Kerja bagus! Kamu berhasil menyelesaikan quiz.'
+                            : 'Terus belajar, kamu pasti bisa lebih baik lagi.',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: quizMuted,
+                          fontSize: 13,
+                          height: 1.6,
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: quizCard,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: quizPink.withOpacity(0.35),
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            const Text(
+                              'YOUR FINAL SCORE',
+                              style: TextStyle(
+                                color: quizMuted,
+                                fontSize: 11,
+                                letterSpacing: 2,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              '$percentage',
+                              style: const TextStyle(
+                                color: quizPink,
+                                fontSize: 62,
+                                height: 1.1,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                            const Text(
+                              'POINTS',
+                              style: TextStyle(
+                                color: quizCyan,
+                                fontSize: 11,
+                                letterSpacing: 3,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 22),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _ResultStat(
+                                    label: 'BENAR',
+                                    value: '$score',
+                                    color: quizCyan,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: _ResultStat(
+                                    label: 'SALAH',
+                                    value: '${total - score}',
+                                    color: quizPink,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.popUntil(
+                              context,
+                              (route) => route.isFirst,
+                            );
+                          },
+                          icon: const Icon(Icons.home_rounded),
+                          label: const Text('KEMBALI KE BERANDA'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: quizPink,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            elevation: 0,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => QuizPage(
+                                  judulMateri: judulMateri,
+                                ),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.refresh_rounded),
+                          label: const Text('ULANGI QUIZ'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: quizCyan,
+                            side: BorderSide(
+                              color: quizCyan.withOpacity(0.5),
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ResultStat extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+
+  const _ResultStat({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.07),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: color.withOpacity(0.25)),
+      ),
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: TextStyle(
+              color: color,
+              fontSize: 25,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 5),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontSize: 10,
+              letterSpacing: 1.5,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _IconButtonBox extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _IconButtonBox({
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: quizCard,
+      borderRadius: BorderRadius.circular(13),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(13),
+        child: Container(
+          width: 43,
+          height: 43,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(13),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.1),
+            ),
+          ),
+          child: Icon(icon, color: Colors.white, size: 21),
         ),
       ),
     );
   }
 }
 
-// ======================================================
-// HALAMAN HASIL QUIZ
-// ======================================================
+class _QuizGlow extends StatelessWidget {
+  final Color color;
+  final double size;
 
-class QuizResultPage extends StatelessWidget {
-  final int score;
-  final int total;
-  final String judulMateri;
-
-  const QuizResultPage({
-    super.key,
-    required this.score,
-    required this.total,
-    required this.judulMateri,
+  const _QuizGlow({
+    required this.color,
+    required this.size,
   });
-
-  String getMessage() {
-    final percentage = score / total * 100;
-
-    if (percentage == 100) {
-      return 'Sempurna! Kamu keren banget! 🏆';
-    } else if (percentage >= 80) {
-      return 'Hebat! Pemahamanmu sudah bagus! 🎉';
-    } else if (percentage >= 60) {
-      return 'Bagus! Tinggal sedikit lagi! 💪';
-    } else {
-      return 'Jangan menyerah! Yuk pelajari lagi materinya! 📚';
-    }
-  }
-
-  IconData getIcon() {
-    final percentage = score / total * 100;
-
-    if (percentage >= 80) {
-      return Icons.emoji_events_rounded;
-    } else if (percentage >= 60) {
-      return Icons.star_rounded;
-    } else {
-      return Icons.menu_book_rounded;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
-    final percentage = (score / total * 100).round();
-
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F7FF),
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxWidth: 650,
+    return IgnorePointer(
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: color,
+              blurRadius: 100,
+              spreadRadius: 30,
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // ICON
-                  Container(
-                    width: 110,
-                    height: 110,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [
-                          Color(0xFF6366F1),
-                          Color(0xFF8B5CF6),
-                        ],
-                      ),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.deepPurple.withOpacity(0.2),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      getIcon(),
-                      color: Colors.white,
-                      size: 60,
-                    ),
-                  ),
-
-                  const SizedBox(height: 28),
-
-                  const Text(
-                    'Quiz Selesai!',
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1F2937),
-                    ),
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  Text(
-                    judulMateri,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Color(0xFF6B7280),
-                      fontSize: 15,
-                    ),
-                  ),
-
-                  const SizedBox(height: 28),
-
-                  // SCORE CARD
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(26),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.06),
-                          blurRadius: 15,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        const Text(
-                          'Skor Kamu',
-                          style: TextStyle(
-                            color: Color(0xFF6B7280),
-                            fontSize: 15,
-                          ),
-                        ),
-
-                        const SizedBox(height: 8),
-
-                        Text(
-                          '$score / $total',
-                          style: const TextStyle(
-                            fontSize: 48,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF6366F1),
-                          ),
-                        ),
-
-                        Text(
-                          '$percentage%',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF10B981),
-                          ),
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        Text(
-                          getMessage(),
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  // ULANGI
-                  SizedBox(
-                    width: double.infinity,
-                    height: 54,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => QuizPage(
-                              judulMateri: judulMateri,
-                            ),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.refresh),
-                      label: const Text(
-                        'Ulangi Quiz',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(255, 235, 112, 240),
-                        foregroundColor: const Color.fromARGB(255, 9, 54, 100),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                        elevation: 0,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  // KEMBALI
-                  SizedBox(
-                    width: double.infinity,
-                    height: 54,
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      icon: const Icon(Icons.arrow_back),
-                      label: const Text(
-                        'Kembali ke Materi',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF6366F1),
-                        side: const BorderSide(
-                          color: Color(0xFF6366F1),
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          ],
         ),
       ),
     );
