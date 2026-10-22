@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'app_storage.dart';
 import 'kartu_pembelajaran.dart';
 
 const Color bgColor = Color(0xFF090B20);
@@ -50,13 +51,30 @@ class MateriPage extends StatelessWidget {
     },
   ];
 
+  Future<void> _bukaMateri(
+    BuildContext context,
+    String title,
+  ) async {
+    await AppStorage.addHistory(title);
+
+    if (!context.mounted) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => KartuPembelajaranPage(
+          judul: title,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: bgColor,
       body: Stack(
         children: [
-          // Neon background decoration
           Positioned(
             top: -100,
             right: -80,
@@ -81,7 +99,9 @@ class MateriPage extends StatelessWidget {
                   slivers: [
                     SliverToBoxAdapter(
                       child: Padding(
-                        padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+                        padding: const EdgeInsets.fromLTRB(
+                          24, 24, 24, 8,
+                        ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -105,7 +125,8 @@ class MateriPage extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 12),
                                 const Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       'MIKROLEARN',
@@ -322,25 +343,19 @@ class MateriPage extends StatelessWidget {
                             delegate: SliverChildBuilderDelegate(
                               (context, index) {
                                 final materi = materiList[index];
+                                final title = materi['title'] as String;
 
                                 return _MateriCard(
-                                  title: materi['title'] as String,
+                                  title: title,
                                   description: materi['desc'] as String,
                                   icon: materi['icon'] as IconData,
                                   color: materi['color'] as Color,
                                   jumlah: materi['jumlah'] as String,
                                   number: '${index + 1}'.padLeft(2, '0'),
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) =>
-                                            KartuPembelajaranPage(
-                                          judul: materi['title'] as String,
-                                        ),
-                                      ),
-                                    );
-                                  },
+                                  onTap: () => _bukaMateri(
+                                    context,
+                                    title,
+                                  ),
                                 );
                               },
                               childCount: materiList.length,
@@ -359,7 +374,6 @@ class MateriPage extends StatelessWidget {
     );
   }
 }
-
 
 class _MateriCard extends StatefulWidget {
   final String title;
@@ -428,9 +442,11 @@ class _MateriCardState extends State<_MateriCard>
 
   Future<void> _handleTap() async {
     await _controller.forward();
+
     if (!mounted) return;
 
     await _controller.reverse();
+
     if (!mounted) return;
 
     widget.onTap();
@@ -448,9 +464,7 @@ class _MateriCardState extends State<_MateriCard>
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: widget.color.withOpacity(
-                    _glowAnimation.value,
-                  ),
+                  color: widget.color.withOpacity(_glowAnimation.value),
                   blurRadius: 24,
                   spreadRadius: 1,
                 ),

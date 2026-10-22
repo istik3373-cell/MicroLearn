@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'materi.dart';
+import 'shortcut_pages.dart';
 
 const bg = Color(0xFF090B20);
 const panel = Color(0xFF151832);
@@ -16,6 +17,15 @@ class HomePage extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const MateriPage()),
+    );
+  }
+
+  void openShortcut(BuildContext context, int tab) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ShortcutPage(initialTab: tab),
+      ),
     );
   }
 
@@ -132,7 +142,7 @@ class HomePage extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       const Text(
-                        'Hai, Sobat Milearn! ',
+                        'Hai, Sobat Milearn!',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 27,
@@ -206,9 +216,7 @@ class HomePage extends StatelessWidget {
                             ],
                           ),
                           borderRadius: BorderRadius.circular(24),
-                          border: Border.all(
-                            color: Colors.white24,
-                          ),
+                          border: Border.all(color: Colors.white24),
                           boxShadow: [
                             BoxShadow(
                               color: purple.withOpacity(0.25),
@@ -255,8 +263,7 @@ class HomePage extends StatelessWidget {
                             ),
                             const SizedBox(height: 18),
                             const Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
                                   'Progress awal',
@@ -278,8 +285,7 @@ class HomePage extends StatelessWidget {
                                 value: 0,
                                 minHeight: 9,
                                 backgroundColor: Color(0x66FFFFFF),
-                                valueColor:
-                                    AlwaysStoppedAnimation(cyan),
+                                valueColor: AlwaysStoppedAnimation(cyan),
                               ),
                             ),
                             const SizedBox(height: 18),
@@ -296,8 +302,7 @@ class HomePage extends StatelessWidget {
                                     vertical: 15,
                                   ),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.circular(13),
+                                    borderRadius: BorderRadius.circular(13),
                                   ),
                                 ),
                               ),
@@ -322,23 +327,36 @@ class HomePage extends StatelessWidget {
                           final count = wide ? 3 : 2;
 
                           final items = [
-                            ('Pengenalan Komputer',
-                                Icons.desktop_windows_rounded, blue),
-                            ('Perangkat Keras',
-                                Icons.keyboard_rounded, pink),
-                            ('Komponen Internal',
-                                Icons.memory_rounded, cyan),
-                            ('Perangkat Lunak',
-                                Icons.widgets_rounded, purple),
-                            ('Fungsi dan Kegunaan',
-                                Icons.settings_suggest_rounded,
-                                const Color(0xFFFFA35C)),
+                            (
+                              'Pengenalan Komputer',
+                              Icons.desktop_windows_rounded,
+                              blue,
+                            ),
+                            (
+                              'Perangkat Keras',
+                              Icons.keyboard_rounded,
+                              pink,
+                            ),
+                            (
+                              'Komponen Internal',
+                              Icons.memory_rounded,
+                              cyan,
+                            ),
+                            (
+                              'Perangkat Lunak',
+                              Icons.widgets_rounded,
+                              purple,
+                            ),
+                            (
+                              'Fungsi dan Kegunaan',
+                              Icons.settings_suggest_rounded,
+                              const Color(0xFFFFA35C),
+                            ),
                           ];
 
                           return GridView.builder(
                             shrinkWrap: true,
-                            physics:
-                                const NeverScrollableScrollPhysics(),
+                            physics: const NeverScrollableScrollPhysics(),
                             itemCount: items.length,
                             gridDelegate:
                                 SliverGridDelegateWithFixedCrossAxisCount(
@@ -357,8 +375,7 @@ class HomePage extends StatelessWidget {
                                   padding: const EdgeInsets.all(15),
                                   decoration: BoxDecoration(
                                     color: panel,
-                                    borderRadius:
-                                        BorderRadius.circular(19),
+                                    borderRadius: BorderRadius.circular(19),
                                     border: Border.all(
                                       color: item.$3.withOpacity(0.5),
                                     ),
@@ -379,8 +396,7 @@ class HomePage extends StatelessWidget {
                                         width: 45,
                                         height: 45,
                                         decoration: BoxDecoration(
-                                          color:
-                                              item.$3.withOpacity(0.13),
+                                          color: item.$3.withOpacity(0.13),
                                           borderRadius:
                                               BorderRadius.circular(14),
                                         ),
@@ -506,6 +522,7 @@ class HomePage extends StatelessWidget {
 
                       const SizedBox(height: 25),
 
+                      // QUICK ACCESS
                       sectionTitle(
                         'Akses Cepat',
                         'YOUR SHORTCUTS',
@@ -525,28 +542,19 @@ class HomePage extends StatelessWidget {
                             Icons.bookmark_rounded,
                             'Bookmark',
                             purple,
-                            () => info(
-                              context,
-                              'Bookmark segera tersedia.',
-                            ),
+                            () => openShortcut(context, 0),
                           ),
                           quick(
                             Icons.history_rounded,
                             'Riwayat',
                             pink,
-                            () => info(
-                              context,
-                              'Riwayat belajar segera tersedia.',
-                            ),
+                            () => openShortcut(context, 1),
                           ),
                           quick(
                             Icons.bar_chart_rounded,
                             'Progress',
                             cyan,
-                            () => info(
-                              context,
-                              'Progress belajar segera tersedia.',
-                            ),
+                            () => openShortcut(context, 2),
                           ),
                           quick(
                             Icons.settings_rounded,
@@ -554,7 +562,7 @@ class HomePage extends StatelessWidget {
                             blue,
                             () => info(
                               context,
-                              'Pengaturan segera tersedia.',
+                              'Pengaturan belum tersedia.',
                             ),
                           ),
                         ],
@@ -656,10 +664,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  static Widget iconButton(
-    IconData icon,
-    VoidCallback onTap,
-  ) {
+  static Widget iconButton(IconData icon, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(13),
@@ -683,10 +688,7 @@ class HomePage extends StatelessWidget {
     Color color,
   ) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 5,
-        vertical: 15,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 15),
       decoration: BoxDecoration(
         color: panel,
         borderRadius: BorderRadius.circular(17),
@@ -821,10 +823,7 @@ class HomePage extends StatelessWidget {
   ) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 5,
-          vertical: 15,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 15),
         decoration: BoxDecoration(
           color: panel,
           borderRadius: BorderRadius.circular(15),

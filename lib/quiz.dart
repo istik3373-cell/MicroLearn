@@ -1,5 +1,6 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'app_storage.dart';
 
 const Color quizBg = Color(0xFF090B20);
 const Color quizCard = Color(0xFF141832);
@@ -59,58 +60,364 @@ class _QuizPageState extends State<QuizPage> {
     super.dispose();
   }
 
-  final List<QuizQuestion> questions = const [
-    QuizQuestion(
-      question: 'Apa yang dimaksud dengan komputer?',
-      options: [
-        'Alat untuk mengolah data menjadi informasi',
-        'Alat khusus untuk mencetak dokumen',
-        'Perangkat untuk menyimpan pakaian',
-        'Alat yang hanya digunakan untuk bermain',
-      ],
-      correctIndex: 0,
-    ),
-    QuizQuestion(
-      question: 'Manakah yang termasuk perangkat input?',
-      options: [
-        'Monitor',
-        'Printer',
-        'Keyboard',
-        'Speaker',
-      ],
-      correctIndex: 2,
-    ),
-    QuizQuestion(
-      question: 'Apa fungsi utama CPU pada komputer?',
-      options: [
-        'Menampilkan gambar ke layar',
-        'Memproses instruksi dan data',
-        'Mencetak dokumen',
-        'Mengeluarkan suara',
-      ],
-      correctIndex: 1,
-    ),
-    QuizQuestion(
-      question: 'Manakah yang termasuk perangkat lunak?',
-      options: [
-        'Mouse',
-        'RAM',
-        'Motherboard',
-        'Sistem operasi',
-      ],
-      correctIndex: 3,
-    ),
-    QuizQuestion(
-      question: 'Apa fungsi RAM pada komputer?',
-      options: [
-        'Menyimpan data sementara saat program berjalan',
-        'Mencetak gambar dan tulisan',
-        'Menghubungkan komputer ke listrik secara langsung',
-        'Menampilkan hasil pengolahan ke layar',
-      ],
-      correctIndex: 0,
-    ),
-  ];
+  
+  List<QuizQuestion> get questions {
+    switch (widget.judulMateri) {
+      case 'Pengenalan Komputer':
+        return const [
+          QuizQuestion(
+            question: 'Apa yang dimaksud dengan komputer?',
+            options: [
+              'Perangkat elektronik untuk mengolah data',
+              'Alat khusus untuk mencetak dokumen',
+              'Perangkat untuk menyimpan pakaian',
+              'Alat yang hanya digunakan untuk bermain',
+            ],
+            correctIndex: 0,
+          ),
+          QuizQuestion(
+            question: 'Apa tahapan utama cara kerja komputer?',
+            options: [
+              'Mengetik, mencetak, dan mematikan',
+              'Input, process, output, dan storage',
+              'Membuka, menutup, dan menghapus',
+              'Mengunduh, mengunggah, dan mencetak',
+            ],
+            correctIndex: 1,
+          ),
+          QuizQuestion(
+            question: 'Manakah contoh penggunaan komputer di bidang pendidikan?',
+            options: [
+              'Mengatur suhu ruangan secara manual',
+              'Memasak makanan',
+              'Membuat tugas dan mengakses materi belajar',
+              'Membersihkan ruang kelas',
+            ],
+            correctIndex: 2,
+          ),
+          QuizQuestion(
+            question: 'Apa yang dimaksud dengan data dalam proses komputasi?',
+            options: [
+              'Hanya gambar yang ditampilkan monitor',
+              'Hasil cetakan dari printer',
+              'Perangkat untuk menyimpan listrik',
+              'Bahan yang dapat diolah menjadi informasi',
+            ],
+            correctIndex: 3,
+          ),
+          QuizQuestion(
+            question: 'Mengapa komputer perlu digunakan secara bijak?',
+            options: [
+              'Agar keamanan data dan tanggung jawab pengguna tetap terjaga',
+              'Agar semua aplikasi berbayar',
+              'Agar komputer tidak membutuhkan listrik',
+              'Agar perangkat keras tidak diperlukan',
+            ],
+            correctIndex: 0,
+          ),
+        ];
+
+      case 'Perangkat Keras':
+        return const [
+          QuizQuestion(
+            question: 'Apa yang dimaksud dengan hardware?',
+            options: [
+              'Kumpulan instruksi aplikasi',
+              'Bagian fisik komputer yang dapat dilihat dan disentuh',
+              'Data yang tersimpan di internet',
+              'Sistem untuk mengelola akun',
+            ],
+            correctIndex: 1,
+          ),
+          QuizQuestion(
+            question: 'Manakah yang termasuk perangkat input?',
+            options: [
+              'Monitor',
+              'Speaker',
+              'Keyboard',
+              'Printer',
+            ],
+            correctIndex: 2,
+          ),
+          QuizQuestion(
+            question: 'Apa fungsi utama monitor?',
+            options: [
+              'Menyimpan data secara permanen',
+              'Memasukkan teks ke komputer',
+              'Menyediakan daya listrik',
+              'Menampilkan informasi secara visual',
+            ],
+            correctIndex: 3,
+          ),
+          QuizQuestion(
+            question: 'Perangkat manakah yang umumnya menggunakan memori flash untuk menyimpan data?',
+            options: [
+              'SSD',
+              'Monitor',
+              'Keyboard',
+              'Speaker',
+            ],
+            correctIndex: 0,
+          ),
+          QuizQuestion(
+            question: 'Apa tugas utama CPU?',
+            options: [
+              'Mencetak dokumen',
+              'Menjalankan instruksi dan memproses data',
+              'Menghasilkan suara',
+              'Menampilkan gambar saja',
+            ],
+            correctIndex: 1,
+          ),
+          QuizQuestion(
+            question: 'Apa fungsi kipas atau sistem pendingin komputer?',
+            options: [
+              'Menambah kapasitas penyimpanan',
+              'Memasukkan data',
+              'Membantu mengurangi panas komponen',
+              'Menggantikan sistem operasi',
+            ],
+            correctIndex: 2,
+          ),
+          QuizQuestion(
+            question: 'Manakah kebiasaan yang tepat untuk merawat hardware?',
+            options: [
+              'Menutup seluruh ventilasi komputer',
+              'Membiarkan debu menumpuk',
+              'Menarik kabel saat perangkat menyala',
+              'Membersihkan perangkat dan menjaga ventilasi',
+            ],
+            correctIndex: 3,
+          ),
+        ];
+
+      case 'Komponen Internal':
+        return const [
+          QuizQuestion(
+            question: 'Apa fungsi utama motherboard?',
+            options: [
+              'Menghubungkan berbagai komponen komputer',
+              'Mencetak dokumen',
+              'Menghasilkan suara',
+              'Menampilkan presentasi',
+            ],
+            correctIndex: 0,
+          ),
+          QuizQuestion(
+            question: 'Apa kepanjangan CPU?',
+            options: [
+              'Computer Personal Utility',
+              'Central Processing Unit',
+              'Central Program User',
+              'Computer Power Usage',
+            ],
+            correctIndex: 1,
+          ),
+          QuizQuestion(
+            question: 'Apa karakteristik utama RAM?',
+            options: [
+              'Digunakan khusus untuk mencetak',
+              'Menyimpan data selamanya tanpa daya',
+              'Menyimpan data sementara saat program berjalan',
+              'Berfungsi sebagai layar komputer',
+            ],
+            correctIndex: 2,
+          ),
+          QuizQuestion(
+            question: 'Apa perbedaan utama RAM dengan SSD?',
+            options: [
+              'RAM digunakan untuk mencetak dokumen',
+              'SSD hanya dapat menampilkan gambar',
+              'RAM merupakan perangkat output',
+              'RAM menyimpan data sementara, sedangkan SSD menyimpan data jangka panjang',
+            ],
+            correctIndex: 3,
+          ),
+          QuizQuestion(
+            question: 'Komponen apa yang dirancang untuk menangani pemrosesan grafis?',
+            options: [
+              'GPU',
+              'Keyboard',
+              'Power supply',
+              'Mouse',
+            ],
+            correctIndex: 0,
+          ),
+          QuizQuestion(
+            question: 'Apa tugas power supply unit (PSU)?',
+            options: [
+              'Menyimpan dokumen pengguna',
+              'Menyediakan daya listrik yang sesuai untuk komponen',
+              'Mengolah teks dalam dokumen',
+              'Menghubungkan komputer ke proyektor',
+            ],
+            correctIndex: 1,
+          ),
+        ];
+
+      case 'Perangkat Lunak':
+        return const [
+          QuizQuestion(
+            question: 'Apa yang dimaksud dengan software?',
+            options: [
+              'Komponen fisik komputer',
+              'Kabel penghubung perangkat',
+              'Program dan instruksi untuk menjalankan tugas',
+              'Perangkat untuk mencetak dokumen',
+            ],
+            correctIndex: 2,
+          ),
+          QuizQuestion(
+            question: 'Manakah yang termasuk sistem operasi?',
+            options: [
+              'Keyboard',
+              'Printer',
+              'Mouse',
+              'Microsoft Windows',
+            ],
+            correctIndex: 3,
+          ),
+          QuizQuestion(
+            question: 'Aplikasi spreadsheet umumnya digunakan untuk apa?',
+            options: [
+              'Mengolah angka dan data dalam lembar kerja',
+              'Mendinginkan prosesor',
+              'Menyediakan daya listrik',
+              'Membersihkan bagian dalam komputer',
+            ],
+            correctIndex: 0,
+          ),
+          QuizQuestion(
+            question: 'Apa kegunaan software utilitas?',
+            options: [
+              'Menggantikan semua hardware',
+              'Membantu pemeliharaan dan perlindungan sistem',
+              'Mengubah monitor menjadi keyboard',
+              'Menyediakan listrik untuk komputer',
+            ],
+            correctIndex: 1,
+          ),
+          QuizQuestion(
+            question: 'Apa tindakan yang tepat saat memasang software?',
+            options: [
+              'Mengunduh semua berkas dari sumber tak dikenal',
+              'Mengabaikan seluruh pembaruan keamanan',
+              'Memilih sumber tepercaya dan memeriksa persyaratan sistem',
+              'Memberikan semua izin tanpa memeriksa',
+            ],
+            correctIndex: 2,
+          ),
+        ];
+
+      case 'Fungsi dan Kegunaan Perangkat':
+        return const [
+          QuizQuestion(
+            question: 'Dalam proses mengetik, apa fungsi keyboard?',
+            options: [
+              'Menampilkan hasil ke layar',
+              'Mencetak dokumen',
+              'Menyimpan data secara permanen',
+              'Memasukkan data dan perintah',
+            ],
+            correctIndex: 3,
+          ),
+          QuizQuestion(
+            question: 'Perangkat apa yang tepat untuk menghasilkan dokumen di atas kertas?',
+            options: [
+              'Printer',
+              'RAM',
+              'CPU',
+              'Mouse',
+            ],
+            correctIndex: 0,
+          ),
+          QuizQuestion(
+            question: 'Mengapa data penting sebaiknya dicadangkan?',
+            options: [
+              'Agar kapasitas RAM selalu penuh',
+              'Untuk mengurangi risiko kehilangan data',
+              'Agar monitor lebih terang',
+              'Untuk menggantikan sistem operasi',
+            ],
+            correctIndex: 1,
+          ),
+          QuizQuestion(
+            question: 'Bagaimana hardware dan software bekerja sama?',
+            options: [
+              'Hardware selalu bekerja tanpa instruksi',
+              'Software merupakan bagian fisik komputer',
+              'Software memberikan instruksi dan hardware menjalankan operasi',
+              'Keduanya tidak saling berhubungan',
+            ],
+            correctIndex: 2,
+          ),
+          QuizQuestion(
+            question: 'Apa yang perlu dipertimbangkan saat memilih komputer?',
+            options: [
+              'Warna perangkat saja',
+              'Jumlah stiker pada perangkat',
+              'Merek tanpa mempertimbangkan kebutuhan',
+              'Tujuan penggunaan, spesifikasi, kompatibilitas, dan anggaran',
+            ],
+            correctIndex: 3,
+          ),
+        ];
+
+      default:
+        return const [
+          QuizQuestion(
+            question: 'Apa fungsi utama komputer?',
+            options: [
+              'Mengolah data menjadi informasi',
+              'Mencetak dokumen saja',
+              'Menyimpan pakaian',
+              'Menghasilkan listrik',
+            ],
+            correctIndex: 0,
+          ),
+          QuizQuestion(
+            question: 'Manakah yang termasuk perangkat input?',
+            options: [
+              'Monitor',
+              'Keyboard',
+              'Speaker',
+              'Printer',
+            ],
+            correctIndex: 1,
+          ),
+          QuizQuestion(
+            question: 'Apa fungsi sistem operasi?',
+            options: [
+              'Mencetak dokumen',
+              'Menggantikan semua komponen',
+              'Mengelola sumber daya komputer',
+              'Menyimpan listrik',
+            ],
+            correctIndex: 2,
+          ),
+          QuizQuestion(
+            question: 'Apa fungsi RAM?',
+            options: [
+              'Menampilkan gambar',
+              'Mencetak teks',
+              'Menghubungkan komputer ke listrik',
+              'Menyimpan data sementara saat program berjalan',
+            ],
+            correctIndex: 3,
+          ),
+          QuizQuestion(
+            question: 'Apa contoh perangkat output?',
+            options: [
+              'Monitor',
+              'Keyboard',
+              'Mouse',
+              'Scanner',
+            ],
+            correctIndex: 0,
+          ),
+        ];
+    }
+  }
 
   void chooseAnswer(int index) {
     if (answered) return;
@@ -120,13 +427,13 @@ class _QuizPageState extends State<QuizPage> {
     });
   }
 
-    void nextQuestion() {
+    
+  void nextQuestion() {
     if (selectedAnswer == null || answered) return;
 
     final isCorrect =
         selectedAnswer == questions[currentQuestion].correctIndex;
 
-    // Memutar suara sesuai jawaban
     _playAnswerSound(isCorrect);
 
     setState(() {
@@ -137,8 +444,7 @@ class _QuizPageState extends State<QuizPage> {
       }
     });
 
-    // Tunggu sebentar sebelum pindah ke soal berikutnya
-    Future.delayed(const Duration(milliseconds: 650), () {
+    Future.delayed(const Duration(milliseconds: 650), () async {
       if (!mounted) return;
 
       if (currentQuestion < questions.length - 1) {
@@ -148,6 +454,15 @@ class _QuizPageState extends State<QuizPage> {
           answered = false;
         });
       } else {
+        // Simpan hasil setelah semua soal selesai dijawab.
+        await AppStorage.recordQuizResult(
+          widget.judulMateri,
+          score,
+          questions.length,
+        );
+
+        if (!mounted) return;
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -161,6 +476,7 @@ class _QuizPageState extends State<QuizPage> {
       }
     });
   }
+
   
   @override
   Widget build(BuildContext context) {
@@ -746,6 +1062,7 @@ class QuizResultPage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 12),
+                      
                       SizedBox(
                         width: double.infinity,
                         height: 52,
